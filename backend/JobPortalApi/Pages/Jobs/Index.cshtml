@@ -1,0 +1,96 @@
+@page
+@model JobsIndexModel
+@{
+    ViewData["Title"] = "Jobs";
+}
+
+<h1 class="text-2xl font-bold mb-4">Jobs</h1>
+
+<form method="get" class="mb-6 flex gap-2">
+    <input type="text" name="search" value="@Model.Search" placeholder="Search" class="border px-3 py-2 rounded flex-1" />
+    <input type="text" name="location" value="@Model.Location" placeholder="Location" class="border px-3 py-2 rounded w-64" />
+    <select name="jobType" class="border px-3 py-2 rounded">
+        <option value="">All types</option>
+        @if (Model.JobType == "Full-time")
+        {
+            <option value="Full-time" selected>Full-time</option>
+        }
+        else
+        {
+            <option value="Full-time">Full-time</option>
+        }
+
+        @if (Model.JobType == "Part-time")
+        {
+            <option value="Part-time" selected>Part-time</option>
+        }
+        else
+        {
+            <option value="Part-time">Part-time</option>
+        }
+
+        @if (Model.JobType == "Contract")
+        {
+            <option value="Contract" selected>Contract</option>
+        }
+        else
+        {
+            <option value="Contract">Contract</option>
+        }
+    </select>
+    <select name="workMode" class="border px-3 py-2 rounded">
+        <option value="">All modes</option>
+        @if (Model.WorkMode == "Onsite")
+        {
+            <option value="Onsite" selected>Onsite</option>
+        }
+        else
+        {
+            <option value="Onsite">Onsite</option>
+        }
+
+        @if (Model.WorkMode == "Remote")
+        {
+            <option value="Remote" selected>Remote</option>
+        }
+        else
+        {
+            <option value="Remote">Remote</option>
+        }
+
+        @if (Model.WorkMode == "Hybrid")
+        {
+            <option value="Hybrid" selected>Hybrid</option>
+        }
+        else
+        {
+            <option value="Hybrid">Hybrid</option>
+        }
+    </select>
+    <button class="bg-blue-600 text-white px-3 py-2 rounded">Filter</button>
+</form>
+
+<div class="grid gap-4">
+    @foreach (var job in Model.Jobs)
+    {
+        <div class="bg-white p-4 rounded border">
+            <h3 class="font-bold">@job.Title</h3>
+            <div class="text-sm text-slate-600">@job.EmployerName</div>
+            <div class="mt-2 text-slate-600">@job.Location</div>
+            <div class="mt-2 text-sm text-slate-500">@job.SalaryRange @job.JobType @job.WorkMode</div>
+            <p class="mt-2">@job.Description</p>
+        </div>
+    }
+</div>
+
+<div class="mt-6 flex items-center justify-center gap-3">
+    @if (Model.PageNumber > 1)
+    {
+        <a asp-page="Index" asp-route-pageNumber="@(Model.PageNumber-1)" class="px-3 py-2 bg-slate-100 rounded">Previous</a>
+    }
+    <span>Page @Model.PageNumber</span>
+    @if (Model.HasMore)
+    {
+        <a asp-page="Index" asp-route-pageNumber="@(Model.PageNumber+1)" class="px-3 py-2 bg-slate-100 rounded">Next</a>
+    }
+</div>

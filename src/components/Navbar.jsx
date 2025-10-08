@@ -58,6 +58,9 @@ export default function Navbar() {
                     <div>
                       <p className="text-sm font-medium text-slate-900">{user.name}</p>
                       <p className="text-xs text-slate-500">{user.role}</p>
+                      {isEmployer && user.companyName && (
+                        <p className="text-xs text-slate-500">{user.companyName}</p>
+                      )}
                     </div>
                   </div>
 

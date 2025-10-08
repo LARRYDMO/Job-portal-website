@@ -7,6 +7,10 @@ export default function JobForm({ initialData = null, onSubmit, onCancel }) {
     title: initialData?.title || '',
     description: initialData?.description || '',
     location: initialData?.location || '',
+    salaryRange: initialData?.salaryRange || '',
+    jobType: initialData?.jobType || 'Full-time',
+    workMode: initialData?.workMode || 'Onsite',
+    skills: initialData?.skills || '',
   });
   // questions feature removed
   const [savedJobId, setSavedJobId] = useState(initialData?.id || null);
@@ -79,6 +83,36 @@ export default function JobForm({ initialData = null, onSubmit, onCancel }) {
       <div>
         <label htmlFor="location" className="block text-sm font-medium text-slate-700 mb-2">Location *</label>
         <input id="location" name="location" type="text" value={formData.location} onChange={handleChange} required className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" placeholder="e.g. New York, NY or Remote" />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label htmlFor="salaryRange" className="block text-sm font-medium text-slate-700 mb-2">Salary Range</label>
+          <input id="salaryRange" name="salaryRange" type="text" value={formData.salaryRange} onChange={handleChange} className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" placeholder="e.g. $70k - $100k" />
+        </div>
+
+        <div>
+          <label htmlFor="jobType" className="block text-sm font-medium text-slate-700 mb-2">Job Type</label>
+          <select id="jobType" name="jobType" value={formData.jobType} onChange={handleChange} className="w-full px-4 py-3 border border-slate-300 rounded-lg">
+            <option>Full-time</option>
+            <option>Part-time</option>
+            <option>Contract</option>
+          </select>
+        </div>
+
+        <div>
+          <label htmlFor="workMode" className="block text-sm font-medium text-slate-700 mb-2">Work Mode</label>
+          <select id="workMode" name="workMode" value={formData.workMode} onChange={handleChange} className="w-full px-4 py-3 border border-slate-300 rounded-lg">
+            <option>Onsite</option>
+            <option>Remote</option>
+            <option>Hybrid</option>
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <label htmlFor="skills" className="block text-sm font-medium text-slate-700 mb-2">Skills / Tags</label>
+        <input id="skills" name="skills" type="text" value={formData.skills} onChange={handleChange} className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" placeholder="e.g. React, Node.js, SQL (comma separated)" />
       </div>
 
       <div>

@@ -10,6 +10,7 @@ export default function RegisterPage() {
     password: '',
     confirmPassword: '',
     role: 'Candidate',
+    companyName: '',
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -41,6 +42,10 @@ export default function RegisterPage() {
     setLoading(true);
 
     const { confirmPassword, ...userData } = formData;
+    // If Candidate, omit companyName from payload
+    if (userData.role !== 'Employer') {
+      delete userData.companyName;
+    }
     const result = await register(userData);
 
     if (result.success) {
@@ -123,6 +128,24 @@ export default function RegisterPage() {
                 <option value="Employer">Employer</option>
               </select>
             </div>
+
+            {formData.role === 'Employer' && (
+              <div>
+                <label htmlFor="companyName" className="block text-sm font-medium text-slate-700 mb-2">
+                  Company Name
+                </label>
+                <input
+                  id="companyName"
+                  name="companyName"
+                  type="text"
+                  value={formData.companyName}
+                  onChange={handleChange}
+                  required={formData.role === 'Employer'}
+                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                  placeholder="Acme Corp"
+                />
+              </div>
+            )}
 
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-slate-700 mb-2">

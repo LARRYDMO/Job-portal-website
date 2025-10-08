@@ -11,7 +11,12 @@ export default function JobListPage() {
   const [filters, setFilters] = useState({
     search: '',
     location: '',
+    jobType: '',
+    workMode: '',
+    page: 1,
+    pageSize: 10,
   });
+  const [total, setTotal] = useState(0);
 
   const { user } = useAuth();
 
@@ -24,7 +29,9 @@ export default function JobListPage() {
       setLoading(true);
       setError('');
       const response = await jobsAPI.getAll(filters);
-      setJobs(response.data);
+      // API returns { total, page, pageSize, data }
+      setJobs(response.data.data || response.data);
+      setTotal(response.data.total || 0);
     } catch (err) {
       setError('Failed to load jobs. Please try again.');
       console.error(err);
@@ -83,6 +90,21 @@ export default function JobListPage() {
                 />
               </div>
 
+                <div className="flex items-center gap-3 px-4 py-2 bg-slate-50 rounded-lg">
+                  <select name="jobType" value={filters.jobType} onChange={handleFilterChange} className="px-3 py-2 bg-transparent border-none outline-none text-slate-900">
+                    <option value="">All types</option>
+                    <option value="Full-time">Full-time</option>
+                    <option value="Part-time">Part-time</option>
+                    <option value="Contract">Contract</option>
+                  </select>
+                  <select name="workMode" value={filters.workMode} onChange={handleFilterChange} className="px-3 py-2 bg-transparent border-none outline-none text-slate-900">
+                    <option value="">All modes</option>
+                    <option value="Onsite">Onsite</option>
+                    <option value="Remote">Remote</option>
+                    <option value="Hybrid">Hybrid</option>
+                  </select>
+                </div>
+
               <button
                 type="submit"
                 className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-3 rounded-lg transition"
@@ -122,6 +144,14 @@ export default function JobListPage() {
                 <JobCard key={job.id} job={job} />
               ))}
             </div>
+
+            {total > filters.pageSize && (
+              <div className="mt-6 flex items-center justify-center gap-3">
+                <button disabled={filters.page === 1} onClick={() => setFilters(f => ({...f, page: f.page - 1}))} className="px-4 py-2 bg-slate-100 rounded">Previous</button>
+                <span className="text-sm text-slate-600">Page {filters.page}</span>
+                <button disabled={filters.page * filters.pageSize >= total} onClick={() => setFilters(f => ({...f, page: f.page + 1}))} className="px-4 py-2 bg-slate-100 rounded">Next</button>
+              </div>
+            )}
           </>
         )}
       </div>

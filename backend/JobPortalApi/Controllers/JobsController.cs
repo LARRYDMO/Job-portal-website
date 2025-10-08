@@ -13,14 +13,19 @@ public class JobsController : ControllerBase
     }
 
     [HttpGet]
-    public IActionResult GetAll([FromQuery] string? search, [FromQuery] string? location)
+    public IActionResult GetAll([FromQuery] string? search, [FromQuery] string? location, [FromQuery] string? jobType, [FromQuery] string? workMode, [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
     {
         var q = _db.Jobs.AsQueryable();
         if (!string.IsNullOrWhiteSpace(search)) q = q.Where(j => j.Title.Contains(search) || j.Description.Contains(search));
         if (!string.IsNullOrWhiteSpace(location)) q = q.Where(j => j.Location.Contains(location));
+        if (!string.IsNullOrWhiteSpace(jobType)) q = q.Where(j => j.JobType == jobType);
+        if (!string.IsNullOrWhiteSpace(workMode)) q = q.Where(j => j.WorkMode == workMode);
 
-        // Project to include applicantCount and employerId expected by frontend
+        var total = q.Count();
+
         var list = q.OrderByDescending(j => j.PostedDate)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .Select(j => new {
                 id = j.Id,
                 title = j.Title,
@@ -29,11 +34,15 @@ public class JobsController : ControllerBase
                 employerName = j.EmployerName,
                 postedDate = j.PostedDate,
                 employerId = j.EmployerId,
+                salaryRange = j.SalaryRange,
+                jobType = j.JobType,
+                workMode = j.WorkMode,
+                skills = j.Skills,
                 applicantCount = _db.Applications.Count(a => a.JobId == j.Id)
             })
             .ToList();
 
-        return Ok(list);
+        return Ok(new { total, page, pageSize, data = list });
     }
 
     [HttpGet("{id}")]
@@ -76,6 +85,10 @@ public class JobsController : ControllerBase
         job.Description = updated.Description;
         job.Location = updated.Location;
         job.EmployerName = updated.EmployerName;
+        job.SalaryRange = updated.SalaryRange;
+        job.JobType = updated.JobType;
+        job.WorkMode = updated.WorkMode;
+        job.Skills = updated.Skills;
         _db.SaveChanges();
         return Ok(job);
     }

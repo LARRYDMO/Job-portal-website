@@ -39,7 +39,12 @@ public class ApplicationsController : ControllerBase
                      ?? User.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)?.Value;
         if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out var candidateGuid))
             return Unauthorized();
-
+        // Prevent duplicate applications by the same candidate for the same job
+        var already = _db.Applications.Any(a => a.JobId == jobId && a.CandidateId == candidateGuid);
+        if (already)
+        {
+            return Conflict(new { message = "You have already applied to this job" });
+        }
         var application = new Application
         {
             Id = Guid.NewGuid(),
@@ -112,6 +117,7 @@ public class ApplicationsController : ControllerBase
                 candidateName = au.u.Name,
                 candidateEmail = au.u.Email,
                 appliedDate = au.a.AppliedAt,
+                status = au.a.Status.ToString(),
                 resumePath = au.a.ResumePath
             })
             .ToList();
@@ -144,12 +150,38 @@ public class ApplicationsController : ControllerBase
                       jobLocation = j.Location,
                       employerName = j.EmployerName,
                       appliedDate = a.AppliedAt,
+                      status = a.Status.ToString(),
                       resumePath = a.ResumePath,
                       candidateId = a.CandidateId
                   })
             .ToList();
 
         return Ok(list);
+    }
+
+    [Authorize]
+    [HttpPut("{applicationId}/status")]
+    public IActionResult UpdateStatus(Guid applicationId, [FromBody] string status)
+    {
+        var app = _db.Applications.Find(applicationId);
+        if (app == null) return NotFound();
+
+        var job = _db.Jobs.Find(app.JobId);
+        if (job == null) return NotFound();
+
+        var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        var userName = User.FindFirst("name")?.Value;
+        var callerIsEmployer = false;
+        if (Guid.TryParse(userId, out var guid) && job.EmployerId.HasValue && job.EmployerId.Value == guid) callerIsEmployer = true;
+        if (!callerIsEmployer && !string.IsNullOrEmpty(userName) && job.EmployerName == userName) callerIsEmployer = true;
+
+        if (!callerIsEmployer) return Forbid();
+
+        if (!Enum.TryParse<ApplicationStatus>(status, true, out var parsed)) return BadRequest(new { message = "Invalid status" });
+
+        app.Status = parsed;
+        _db.SaveChanges();
+        return Ok(new { message = "Status updated", status = app.Status.ToString() });
     }
 
     // Debug helper - returns the Authorization header and current user claims (do not expose in production)
