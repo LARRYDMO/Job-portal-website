@@ -25,7 +25,8 @@ public class AuthController : ControllerBase
             Name = dto.Name,
             Email = dto.Email,
             PasswordHash = AuthService.HashPassword(dto.Password),
-            Role = dto.Role
+            Role = dto.Role,
+            CompanyName = dto.Role == "Employer" ? dto.CompanyName : null
         };
 
         _db.Users.Add(user);
@@ -33,7 +34,7 @@ public class AuthController : ControllerBase
 
         var token = AuthService.GenerateToken(user, _config);
 
-        return Ok(new { token, user = new { id = user.Id, name = user.Name, email = user.Email, role = user.Role } });
+    return Ok(new { token, user = new { id = user.Id, name = user.Name, email = user.Email, role = user.Role, companyName = user.CompanyName } });
     }
 
     [HttpPost("login")]
@@ -44,6 +45,6 @@ public class AuthController : ControllerBase
         if (user == null) return Unauthorized(new { message = "Invalid credentials" });
 
         var token = AuthService.GenerateToken(user, _config);
-        return Ok(new { token, user = new { id = user.Id, name = user.Name, email = user.Email, role = user.Role } });
+        return Ok(new { token, user = new { id = user.Id, name = user.Name, email = user.Email, role = user.Role, companyName = user.CompanyName } });
     }
 }

@@ -107,9 +107,17 @@ export default function CandidateDashboard() {
                       <FileText className="w-4 h-4 text-slate-500" />
                       <span className="text-sm text-slate-600">Resume submitted</span>
                     </div>
-                    <span className="px-3 py-1 bg-blue-100 text-blue-700 text-sm font-medium rounded-full">
-                      Under Review
-                    </span>
+                    {(() => {
+                      const raw = (application.status || 'InReview') + '';
+                      const st = raw.toString().trim().toLowerCase();
+                      const text = st === 'accepted' ? 'Accepted' : st === 'rejected' ? 'Rejected' : (st === 'inreview' || st === 'applied' ? 'Under Review' : application.status);
+                      const bg = st === 'accepted' ? 'bg-emerald-100 text-emerald-700' : st === 'rejected' ? 'bg-rose-100 text-rose-700' : 'bg-blue-100 text-blue-700';
+                      return (
+                        <span className={`px-3 py-1 ${bg} text-sm font-medium rounded-full`}>
+                          {text}
+                        </span>
+                      );
+                    })()}
                   </div>
                 </div>
               ))}

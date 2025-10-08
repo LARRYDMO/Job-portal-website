@@ -32,6 +32,10 @@ export const jobsAPI = {
     const params = new URLSearchParams();
     if (filters.search) params.append('search', filters.search);
     if (filters.location) params.append('location', filters.location);
+    if (filters.jobType) params.append('jobType', filters.jobType);
+    if (filters.workMode) params.append('workMode', filters.workMode);
+    if (filters.page) params.append('page', filters.page);
+    if (filters.pageSize) params.append('pageSize', filters.pageSize);
     return api.get(`/jobs?${params.toString()}`);
   },
   getById: (id) => api.get(`/jobs/${id}`),
@@ -50,6 +54,13 @@ export const applicationsAPI = {
     });
   },
   getByJob: (jobId) => api.get(`/applications/job/${jobId}`),
+  updateStatus: (applicationId, status) => {
+    // The backend endpoint expects the raw string in the body (e.g. "Accepted"),
+    // so send a JSON string to bind to [FromBody] string status on the server.
+    return api.put(`/applications/${applicationId}/status`, JSON.stringify(status), {
+      headers: { 'Content-Type': 'application/json' },
+    });
+  },
   getMyApplications: () => api.get('/applications/my'),
 };
 

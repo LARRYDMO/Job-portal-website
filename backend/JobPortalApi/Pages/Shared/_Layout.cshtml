@@ -1,0 +1,39 @@
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Authentication.Cookies
+@using System.Security.Claims
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Job Portal</title>
+    <link rel="stylesheet" href="/css/site.css" />
+</head>
+<body class="bg-slate-50">
+    <header class="bg-white border-b py-4">
+        <div class="max-w-7xl mx-auto px-4 flex items-center justify-between">
+            <a href="/Jobs" class="text-blue-600 font-bold text-xl">JobPortal</a>
+            <div>
+                @if (User?.Identity?.IsAuthenticated ?? false)
+                {
+                    <span class="mr-4">Hello, @User.FindFirst("name")?.Value</span>
+                    <span class="mr-4 text-sm text-slate-600">(@User.FindFirst(ClaimTypes.Role)?.Value)</span>
+                    <span class="mr-4 text-sm text-slate-600">@User.FindFirst("companyName")?.Value</span>
+                    <form method="post" asp-page-handler="Logout" class="inline">
+                        <button type="submit" class="text-red-600">Logout</button>
+                    </form>
+                }
+                else
+                {
+                    <a href="/Account/Login" class="mr-4">Login</a>
+                    <a href="/Account/Register" class="bg-blue-600 text-white px-3 py-1 rounded">Register</a>
+                }
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 py-8">
+        @RenderBody()
+    </main>
+</body>
+</html>

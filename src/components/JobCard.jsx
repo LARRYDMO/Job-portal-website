@@ -48,6 +48,12 @@ export default function JobCard({ job }) {
             <Calendar className="w-4 h-4" />
             <span>{formatDate(job.postedDate)}</span>
           </div>
+
+          <div className="flex items-center gap-2">
+            {job.salaryRange && <span className="text-xs bg-slate-100 px-2 py-1 rounded-full">{job.salaryRange}</span>}
+            {job.jobType && <span className="text-xs bg-slate-100 px-2 py-1 rounded-full">{job.jobType}</span>}
+            {job.workMode && <span className="text-xs bg-slate-100 px-2 py-1 rounded-full">{job.workMode}</span>}
+          </div>
         </div>
 
         <button

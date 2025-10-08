@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -9,9 +10,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace JobPortalApi.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251008143151_AddCompanyNameToUser")]
+    partial class AddCompanyNameToUser
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.9");
@@ -56,9 +59,6 @@ namespace JobPortalApi.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("INTEGER");
-
                     b.HasKey("Id");
 
                     b.ToTable("Applications");
@@ -81,9 +81,6 @@ namespace JobPortalApi.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("JobType")
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("Location")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -91,17 +88,8 @@ namespace JobPortalApi.Migrations
                     b.Property<DateTime>("PostedDate")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("SalaryRange")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Skills")
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("WorkMode")
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
@@ -134,51 +122,6 @@ namespace JobPortalApi.Migrations
                     b.ToTable("Questions");
                 });
 
-            modelBuilder.Entity("Resume", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("FileName")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("FilePath")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("UploadedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Resumes");
-                });
-
-            modelBuilder.Entity("SavedJob", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("JobId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("SavedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("SavedJobs");
-                });
-
             modelBuilder.Entity("User", b =>
                 {
                     b.Property<Guid>("Id")
@@ -186,9 +129,6 @@ namespace JobPortalApi.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("CompanyName")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("DefaultResumeId")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Email")
@@ -205,12 +145,6 @@ namespace JobPortalApi.Migrations
 
                     b.Property<string>("Role")
                         .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Skills")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Summary")
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");

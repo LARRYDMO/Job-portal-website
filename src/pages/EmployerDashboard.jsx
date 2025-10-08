@@ -25,8 +25,10 @@ export default function EmployerDashboard() {
     try {
       setLoading(true);
       const response = await jobsAPI.getAll();
+      // API returns a paged shape { total, page, pageSize, data } or for compatibility an array.
+      const allJobs = Array.isArray(response.data) ? response.data : (response.data.data || []);
       // Jobs may be seeded without EmployerId; fall back to matching employerName so older jobs are visible to the creator
-      const myJobs = response.data.filter((job) => {
+      const myJobs = allJobs.filter((job) => {
         try {
           return (job.employerId && job.employerId === user.id) || job.employerName === user.name;
         } catch (e) {
@@ -36,7 +38,7 @@ export default function EmployerDashboard() {
       setJobs(myJobs);
     } catch (err) {
       setError('Failed to load jobs');
-      console.error(err);
+      console.error('EmployerDashboard.fetchJobs error:', err, err?.response?.data || err?.message);
     } finally {
       setLoading(false);
     }
@@ -46,12 +48,45 @@ export default function EmployerDashboard() {
     try {
       setLoadingApplicants(true);
       const response = await applicationsAPI.getByJob(jobId);
-      setApplicants(response.data);
+      // Deduplicate by application id in case DB contains duplicates
+      const list = response.data || [];
+      const seen = new Set();
+      const deduped = [];
+      for (const item of list) {
+        if (!seen.has(item.id)) {
+          seen.add(item.id);
+          // ensure status is a string and normalized
+          const s = (item.status ?? 'InReview').toString();
+          item.status = s;
+          deduped.push(item);
+        }
+      }
+      console.debug('fetchApplicants - deduped list', deduped);
+      setApplicants(deduped);
       setSelectedJobId(jobId);
     } catch (err) {
       console.error('Failed to load applicants', err);
     } finally {
       setLoadingApplicants(false);
+    }
+  };
+
+  const updateApplicationStatus = async (applicationId, newStatus) => {
+    try {
+  const res = await applicationsAPI.updateStatus(applicationId, newStatus);
+  console.debug('updateApplicationStatus - response', res?.data);
+  const returned = (res?.data?.status || newStatus).toString();
+  // normalize returned status (strip quotes/spaces)
+  const normalized = returned.trim();
+  // update local applicants list to reflect new status returned by server
+  setApplicants((prev) => prev.map(a => a.id === applicationId ? { ...a, status: normalized } : a));
+      // refresh from server to ensure list is authoritative (handles server-side dedupe and any transforms)
+      if (selectedJobId) {
+        try { await fetchApplicants(selectedJobId); } catch (_) { /* ignore refresh errors */ }
+      }
+    } catch (err) {
+      console.error('Failed to update application status', err);
+      alert('Failed to update status');
     }
   };
 
@@ -118,6 +153,9 @@ export default function EmployerDashboard() {
         <div className="max-w-7xl mx-auto px-4">
           <h1 className="text-4xl font-bold mb-2">Employer Dashboard</h1>
           <p className="text-blue-100 text-lg">Manage your job postings and applications</p>
+          {user?.companyName && (
+            <p className="text-blue-100 mt-1">Company: <span className="font-semibold">{user.companyName}</span></p>
+          )}
         </div>
       </div>
 
@@ -240,19 +278,69 @@ export default function EmployerDashboard() {
                     key={applicant.id}
                     className="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-md transition"
                   >
-                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-start justify-between mb-3">
                       <div>
                         <h3 className="text-lg font-bold text-slate-900">{applicant.candidateName}</h3>
                         <p className="text-sm text-slate-600">{applicant.candidateEmail}</p>
                       </div>
-                      <span className="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">
-                        New
-                      </span>
+                      {(() => {
+                        const s = (applicant.status || 'inreview').toString().trim().toLowerCase();
+                        // show 'New' only for freshly applied / in-review candidates
+                        if (s === 'applied' || s === 'inreview') {
+                          return (
+                            <span className="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">New</span>
+                          );
+                        }
+                        return null;
+                      })()}
                     </div>
 
-                    <div className="flex items-center gap-2 text-sm text-slate-500 mb-4">
-                      <FileText className="w-4 h-4" />
-                      <span>Applied {formatDate(applicant.appliedDate)}</span>
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-2 text-sm text-slate-500">
+                        <FileText className="w-4 h-4" />
+                        <span>Applied {formatDate(applicant.appliedDate)}</span>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        {(() => {
+                          const raw = (applicant.status || 'InReview') + '';
+                          const status = raw.trim();
+                          const lower = status.toLowerCase();
+                          const badgeText = lower === 'inreview' || lower === 'applied' ? 'Under Review' : lower === 'accepted' ? 'Accepted' : lower === 'rejected' ? 'Rejected' : status;
+                          const bg = lower === 'accepted' ? '#E6FFFA' : lower === 'rejected' ? '#FFF5F5' : '#F1F5F9';
+                          const color = lower === 'accepted' ? '#0BC5EA' : lower === 'rejected' ? '#F56565' : '#495057';
+                          return (
+                            <div className="text-sm px-3 py-1 rounded-full font-medium" style={{ background: bg, color }}>
+                              {badgeText}
+                            </div>
+                          );
+                        })()}
+                        <div className="flex gap-2">
+                          {(() => {
+                            const current = (applicant.status || '').toString().trim().toLowerCase();
+                            return (
+                              <>
+                                <button
+                                  onClick={() => updateApplicationStatus(applicant.id, 'Accepted')}
+                                  className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded-md text-sm"
+                                  disabled={current === 'accepted'}
+                                  title={current === 'accepted' ? 'Already accepted' : 'Accept application'}
+                                >
+                                  Accept
+                                </button>
+                                <button
+                                  onClick={() => updateApplicationStatus(applicant.id, 'Rejected')}
+                                  className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded-md text-sm"
+                                  disabled={current === 'rejected'}
+                                  title={current === 'rejected' ? 'Already rejected' : 'Reject application'}
+                                >
+                                  Reject
+                                </button>
+                              </>
+                            );
+                          })()}
+                        </div>
+                      </div>
                     </div>
 
                     {applicant.resumePath && (

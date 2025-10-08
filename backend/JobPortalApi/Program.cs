@@ -11,6 +11,7 @@ var dbPath = Path.Combine(builder.Environment.ContentRootPath, "jobportal.db");
 builder.Services.AddDbContext<AppDbContext>(opt => opt.UseSqlite($"Data Source={dbPath}"));
 
 builder.Services.AddControllers();
+builder.Services.AddRazorPages();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -53,6 +54,18 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization();
 
+// Cookie auth for server-rendered Razor Pages (simple scheme using Users DB)
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+    .AddCookie("Cookies", options =>
+    {
+        options.LoginPath = "/Account/Login";
+        options.Cookie.Name = "JobPortalAuth";
+    });
+
 var app = builder.Build();
 
 // Enhanced logging for startup/shutdown and unhandled exceptions
@@ -91,6 +104,9 @@ if (app.Environment.IsDevelopment())
 // Serve default wwwroot if present
 app.UseStaticFiles();
 
+// Enable routing for Razor Pages
+app.UseRouting();
+
 // Also serve uploaded resumes from /uploads
 var uploadsPath = Path.Combine(app.Environment.ContentRootPath, "uploads");
 if (!Directory.Exists(uploadsPath)) Directory.CreateDirectory(uploadsPath);
@@ -99,12 +115,13 @@ app.UseStaticFiles(new StaticFileOptions
     FileProvider = new PhysicalFileProvider(uploadsPath),
     RequestPath = "/uploads"
 });
-app.UseRouting();
+
 app.UseCors(corsPolicyName);
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapRazorPages();
 
 // Seed some sample data
 using (var scope = app.Services.CreateScope())
