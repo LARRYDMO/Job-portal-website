@@ -64,4 +64,9 @@ export const applicationsAPI = {
   getMyApplications: () => api.get('/applications/my'),
 };
 
+export const savedJobsAPI = {
+  toggle: (jobId) => api.post(`/saved-jobs/toggle/${jobId}`),
+  mine: () => api.get('/saved-jobs/mine'),
+};
+
 export default api;
