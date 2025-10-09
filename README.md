@@ -79,12 +79,3 @@ If you want SPA logins to also create the cookie for Razor Pages, a cookie-login
 - Backend dev: `cd backend/JobPortalApi; dotnet run`
 - Seed DB: `sqlite3 backend/JobPortalApi/jobportal.db < backend/JobPortalApi/seed.sql`
 
-## Next steps / improvements
-
-- Add cookie-login endpoint for SPA single sign-on
-- Add toasts and notification center for better UX
-- Implement email job alerts and background worker
-
----
-
-If you want, I can merge this README and the `seed.sql` into `main` now.
