@@ -8,6 +8,7 @@ import JobListPage from './pages/JobListPage';
 import JobDetailPage from './pages/JobDetailPage';
 import CandidateDashboard from './pages/CandidateDashboard';
 import EmployerDashboard from './pages/EmployerDashboard';
+import SavedJobs from './pages/SavedJobs';
 
 function App() {
   return (
@@ -58,6 +59,16 @@ function App() {
                 <ProtectedRoute requireRole="Candidate">
                   <Navbar />
                   <CandidateDashboard />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/saved"
+              element={
+                <ProtectedRoute requireRole="Candidate">
+                  <Navbar />
+                  <SavedJobs />
                 </ProtectedRoute>
               }
             />

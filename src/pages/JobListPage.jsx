@@ -21,14 +21,16 @@ export default function JobListPage() {
   const { user } = useAuth();
 
   useEffect(() => {
+    // Fetch on mount and whenever the current page changes
     fetchJobs();
-  }, []);
+  }, [filters.page]);
 
-  const fetchJobs = async () => {
+  const fetchJobs = async (overrideFilters = null) => {
+    const activeFilters = overrideFilters || filters;
     try {
       setLoading(true);
       setError('');
-      const response = await jobsAPI.getAll(filters);
+      const response = await jobsAPI.getAll(activeFilters);
       // API returns { total, page, pageSize, data }
       setJobs(response.data.data || response.data);
       setTotal(response.data.total || 0);
@@ -42,14 +44,20 @@ export default function JobListPage() {
 
   const handleSearch = (e) => {
     e.preventDefault();
-    fetchJobs();
+    // Reset to first page when performing a new search
+    const reset = { ...filters, page: 1 };
+    setFilters(reset);
+    fetchJobs(reset);
   };
 
   const handleFilterChange = (e) => {
-    setFilters({
+    const updated = {
       ...filters,
       [e.target.name]: e.target.value,
-    });
+      page: 1,
+    };
+    setFilters(updated);
+    fetchJobs(updated);
   };
 
   return (

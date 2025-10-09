@@ -1,8 +1,11 @@
-import { MapPin, Calendar, Building2 } from 'lucide-react';
+import { MapPin, Calendar, Building2, Heart } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { savedJobsAPI } from '../services/api';
+import { useState } from 'react';
 
 export default function JobCard({ job }) {
   const navigate = useNavigate();
+  const [saved, setSaved] = useState(job.isSaved || false);
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -55,16 +58,35 @@ export default function JobCard({ job }) {
             {job.workMode && <span className="text-xs bg-slate-100 px-2 py-1 rounded-full">{job.workMode}</span>}
           </div>
         </div>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={async (e) => {
+              e.stopPropagation();
+              try {
+                const res = await savedJobsAPI.toggle(job.id);
+                setSaved(!!res.data?.saved);
+              } catch (err) {
+                console.error('Failed to toggle save', err);
+                const message = err.response?.data?.message || 'Please sign in to save jobs';
+                alert(message);
+              }
+            }}
+            className={`p-2 rounded-full ${saved ? 'bg-rose-100 text-rose-600' : 'bg-slate-100 text-slate-600'}`}
+            title={saved ? 'Unsave job' : 'Save job'}
+          >
+            <Heart className="w-4 h-4" />
+          </button>
 
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            navigate(`/jobs/${job.id}`);
-          }}
-          className="text-blue-600 hover:text-blue-700 font-semibold text-sm"
-        >
-          View Details →
-        </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate(`/jobs/${job.id}`);
+            }}
+            className="text-blue-600 hover:text-blue-700 font-semibold text-sm"
+          >
+            View Details →
+          </button>
+        </div>
       </div>
     </div>
   );

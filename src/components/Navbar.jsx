@@ -40,6 +40,15 @@ export default function Navbar() {
                   </Link>
                 )}
 
+                {isCandidate && (
+                  <Link
+                    to="/saved"
+                    className="text-slate-700 hover:text-slate-900 font-medium transition"
+                  >
+                    Saved Jobs
+                  </Link>
+                )}
+
                 {isEmployer && (
                   <Link
                     to="/employer/dashboard"
